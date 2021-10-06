@@ -17,7 +17,7 @@ Quickly configure and use Cloudflare WARP on your Linux Server, which works with
 ## Usage
 
 ```bash
-bash <(curl -fsSL git.io/warp.sh) [SUBCOMMAND]
+bash <(https://github.com/luoxue-bot/warp.sh/raw/main/warp.sh) [SUBCOMMAND]
 ```
 
 ### Subcommands
