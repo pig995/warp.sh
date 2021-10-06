@@ -91,7 +91,7 @@ WireGuard_Interface_Rule_table='51888'
 WireGuard_Interface_Rule_fwmark='51888'
 WireGuard_Interface_MTU='1280'
 
-WireGuard_Peer_Endpoint_IP4='162.159.192.1'
+WireGuard_Peer_Endpoint_IP4='162.159.193.1'
 WireGuard_Peer_Endpoint_IP6='2606:4700:d0::a29f:c001'
 WireGuard_Peer_Endpoint_IPv4="${WireGuard_Peer_Endpoint_IP4}:2408"
 WireGuard_Peer_Endpoint_IPv6="[${WireGuard_Peer_Endpoint_IP6}]:2408"
