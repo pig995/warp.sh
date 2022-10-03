@@ -329,7 +329,6 @@ Read_WGCF_Profile() {
     WireGuard_Interface_Address=$(cat ${WGCF_ProfilePath} | grep ^Address | cut -d= -f2- | awk '$1=$1' | sed ":a;N;s/\n/,/g;ta")
     WireGuard_Peer_PublicKey=$(cat ${WGCF_ProfilePath} | grep ^PublicKey | cut -d= -f2- | awk '$1=$1')
     WireGuard_Interface_Address_IPv4=$(echo ${WireGuard_Interface_Address} | cut -d, -f1 | cut -d'/' -f1)
-    WireGuard_Interface_Address_IPv6=$(echo ${WireGuard_Interface_Address} | cut -d, -f2 | cut -d'/' -f1)
 }
 
 Load_WGCF_Profile() {
@@ -486,14 +485,6 @@ Restart_WireGuard() {
     fi
 }
 
-Enable_IPv6_Support() {
-    if [[ $(sysctl -a | grep 'disable_ipv6.*=.*1') || $(cat /etc/sysctl.{conf,d/*} | grep 'disable_ipv6.*=.*1') ]]; then
-        sed -i '/disable_ipv6/d' /etc/sysctl.{conf,d/*}
-        echo 'net.ipv6.conf.all.disable_ipv6 = 0' >/etc/sysctl.d/ipv6.conf
-        sysctl -w net.ipv6.conf.all.disable_ipv6=0
-    fi
-}
-
 Enable_WireGuard() {
     Enable_IPv6_Support
     Check_WireGuard
@@ -600,15 +591,7 @@ Get_IP_addr() {
             log WARN "Network interface IPv4 address not obtained."
         fi
     fi
-    if [[ ${IPv6Status} = on ]]; then
-        log INFO "Getting the network interface IPv6 address..."
-        Check_IPv6_addr
-        if [[ ${IPv6_addr} ]]; then
-            log INFO "IPv6 Address: ${IPv6_addr}"
-        else
-            log WARN "Network interface IPv6 address not obtained."
-        fi
-    fi
+
 }
 
 Get_IPv4_addr() {
@@ -743,18 +726,6 @@ PostDown = ip -4 rule delete table main suppress_prefixlength 0
 EOF
 }
 
-Generate_WireGuardProfile_Interface_Rule_IPv6_nonGlobal() {
-    cat <<EOF >>${WireGuard_ConfPath}
-PostUP = ip -6 route add default dev ${WireGuard_Interface} table ${WireGuard_Interface_Rule_table}
-PostUP = ip -6 rule add from ${WireGuard_Interface_Address_IPv6} lookup ${WireGuard_Interface_Rule_table}
-PostDown = ip -6 rule delete from ${WireGuard_Interface_Address_IPv6} lookup ${WireGuard_Interface_Rule_table}
-PostUP = ip -6 rule add fwmark ${WireGuard_Interface_Rule_fwmark} lookup ${WireGuard_Interface_Rule_table}
-PostDown = ip -6 rule delete fwmark ${WireGuard_Interface_Rule_fwmark} lookup ${WireGuard_Interface_Rule_table}
-PostUP = ip -6 rule add table main suppress_prefixlength 0
-PostDown = ip -6 rule delete table main suppress_prefixlength 0
-EOF
-}
-
 Generate_WireGuardProfile_Interface_Rule_DualStack_nonGlobal() {
     Generate_WireGuardProfile_Interface_Rule_TableOff
     Generate_WireGuardProfile_Interface_Rule_IPv4_nonGlobal
@@ -765,13 +736,6 @@ Generate_WireGuardProfile_Interface_Rule_IPv4_Global_srcIP() {
     cat <<EOF >>${WireGuard_ConfPath}
 PostUp = ip -4 rule add from ${IPv4_addr} lookup main prio 18
 PostDown = ip -4 rule delete from ${IPv4_addr} lookup main prio 18
-EOF
-}
-
-Generate_WireGuardProfile_Interface_Rule_IPv6_Global_srcIP() {
-    cat <<EOF >>${WireGuard_ConfPath}
-PostUp = ip -6 rule add from ${IPv6_addr} lookup main prio 18
-PostDown = ip -6 rule delete from ${IPv6_addr} lookup main prio 18
 EOF
 }
 
@@ -1347,7 +1311,6 @@ SUBCOMMANDS:
     unproxy         Disable WARP Client Proxy Mode
     wg              Configuration WARP Non-Global Network (with WireGuard), set fwmark or interface IP Address to use the WARP network
     wg4             Configuration WARP IPv4 Global Network (with WireGuard), all IPv4 outbound data over the WARP network
-    wg6             Configuration WARP IPv6 Global Network (with WireGuard), all IPv6 outbound data over the WARP network
     wgd             Configuration WARP Dual Stack Global Network (with WireGuard), all outbound data over the WARP network
     rewg            Restart WARP WireGuard service
     unwg            Disable WARP WireGuard service
