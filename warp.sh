@@ -84,8 +84,8 @@ WireGuard_Interface='wgcf'
 WireGuard_ConfPath="/etc/wireguard/${WireGuard_Interface}.conf"
 
 WireGuard_Interface_DNS_IPv4='8.8.8.8,8.8.4.4'
-WireGuard_Interface_DNS_46="${WireGuard_Interface_DNS_IPv4},${WireGuard_Interface_DNS_IPv6}"
-WireGuard_Interface_DNS_64="${WireGuard_Interface_DNS_IPv6},${WireGuard_Interface_DNS_IPv4}"
+WireGuard_Interface_DNS_46="${WireGuard_Interface_DNS_IPv4}"
+WireGuard_Interface_DNS_64="${WireGuard_Interface_DNS_IPv4}"
 WireGuard_Interface_Rule_table='51888'
 WireGuard_Interface_Rule_fwmark='51888'
 WireGuard_Interface_MTU='1280'
@@ -482,14 +482,6 @@ Restart_WireGuard() {
         log ERROR "WireGuard failure to run!"
         journalctl -u wg-quick@${WireGuard_Interface} --no-pager
         exit 1
-    fi
-}
-
-Enable_IPv6_Support() {
-    if [[ $(sysctl -a | grep 'disable_ipv6.*=.*1') || $(cat /etc/sysctl.{conf,d/*} | grep 'disable_ipv6.*=.*1') ]]; then
-        sed -i '/disable_ipv6/d' /etc/sysctl.{conf,d/*}
-        echo 'net.ipv6.conf.all.disable_ipv6 = 0' >/etc/sysctl.d/ipv6.conf
-        sysctl -w net.ipv6.conf.all.disable_ipv6=0
     fi
 }
 
